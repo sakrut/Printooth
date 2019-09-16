@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
 import com.mazenrashed.printooth.Printooth
+import com.mazenrashed.printooth.data.converter.Utf8Converter
 import com.mazenrashed.printooth.data.printable.ImagePrintable
 import com.mazenrashed.printooth.data.printable.Printable
 import com.mazenrashed.printooth.data.printable.TextPrintable
@@ -93,38 +94,19 @@ class WoosimActivity : AppCompatActivity() {
     }
 
     private fun getSomePrintables() = ArrayList<Printable>().apply {
-        add(TextPrintable.Builder()
-                .setText("Hello World")
-                .setFontSize(DefaultPrinter.FONT_SIZE_LARGE)
-                .setNewLinesAfter(1)
-                .build())
 
         add(TextPrintable.Builder()
-                .setText("Hello World")
+                .setText("aą zż xź cć eę lł oó sś")
                 .setLineSpacing(DefaultPrinter.LINE_SPACING_60)
                 .setAlignment(DefaultPrinter.ALIGNMENT_CENTER)
                 .setEmphasizedMode(DefaultPrinter.EMPHASIZED_MODE_BOLD)
-                .setUnderlined(DefaultPrinter.UNDERLINED_MODE_ON)
+                //.setUnderlined(DefaultPrinter.UNDERLINED_MODE_ON)
+                .setCharacterCode(DefaultPrinter.CHARCODE_PC866)
                 .setNewLinesAfter(1)
+                .setCustomConverter(Utf8Converter())
                 .build())
 
-        add(TextPrintable.Builder()
-                .setText("Hello World")
-                .setAlignment(DefaultPrinter.ALIGNMENT_RIGHT)
-                .setEmphasizedMode(DefaultPrinter.EMPHASIZED_MODE_BOLD)
-                .setUnderlined(DefaultPrinter.UNDERLINED_MODE_ON)
-                .setNewLinesAfter(1)
-                .build())
 
-        add(TextPrintable.Builder()
-                .setText("اختبار العربية")
-                .setAlignment(DefaultPrinter.ALIGNMENT_CENTER)
-                .setEmphasizedMode(DefaultPrinter.EMPHASIZED_MODE_BOLD)
-                .setFontSize(DefaultPrinter.FONT_SIZE_NORMAL)
-                .setUnderlined(DefaultPrinter.UNDERLINED_MODE_ON)
-                .setCharacterCode(DefaultPrinter.CHARCODE_ARABIC_FARISI)
-                .setNewLinesAfter(1)
-                .build())
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

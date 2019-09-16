@@ -4,9 +4,10 @@ import com.mazenrashed.printooth.data.DefaultPrintingImagesHelper
 import com.mazenrashed.printooth.data.PrintingImagesHelper
 import com.mazenrashed.printooth.data.converter.Converter
 import com.mazenrashed.printooth.data.converter.DefaultConverter
+import com.mazenrashed.printooth.data.converter.Utf8Converter
 
 open class DefaultPrinter : Printer() {
-    override fun useConverter(): Converter = DefaultConverter()
+    override fun useConverter(): Converter = Utf8Converter()
 
     override fun initLineSpacingCommand(): ByteArray = byteArrayOf(0x1B, 0x33)
 
