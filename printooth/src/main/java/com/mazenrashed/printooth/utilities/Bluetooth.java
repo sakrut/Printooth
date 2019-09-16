@@ -16,6 +16,7 @@ import com.mazenrashed.printooth.data.DeviceCallback;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
@@ -42,6 +43,11 @@ public class Bluetooth {
     private DiscoveryCallback discoveryCallback;
     private BluetoothCallback bluetoothCallback;
     private boolean connected;
+    private boolean stopWorker;
+    private int readBufferPosition;
+    private InputStream inp;
+    byte[] readBuffer;
+    final byte delimiter = 10;
 
     public Bluetooth(Context context) {
         initialize(context, UUID.fromString("00001101-0000-1000-8000-00805f9b34fb"));
@@ -231,6 +237,7 @@ public class Bluetooth {
     public void sendMessage(byte[] msg) {
         try {
             out.write(msg);
+
         } catch (final IOException e) {
             connected = false;
             if (deviceCallback != null)
@@ -270,21 +277,50 @@ public class Bluetooth {
     public void setDiscoveryCallback(DiscoveryCallback discoveryCallback) {
         this.discoveryCallback = discoveryCallback;
     }
-
+    
     private class ReceiveThread extends Thread implements Runnable {
         public void run() {
-            String msg;
-            try {
-                while ((msg = input.readLine()) != null) {
-                    if (deviceCallback != null) {
-                        final String msgCopy = msg;
-                        new android.os.Handler(Looper.getMainLooper()).post(() -> deviceCallback.onMessage(msgCopy));
+            while (!Thread.currentThread().isInterrupted() && !stopWorker) {
+
+                try {
+
+                    int bytesAvailable = inp.available();
+
+                    if (bytesAvailable > 0) {
+
+                        byte[] packetBytes = new byte[bytesAvailable];
+                        inp.read(packetBytes);
+
+                        for (int i = 0; i < bytesAvailable; i++) {
+
+                            byte b = packetBytes[i];
+                            if (b == delimiter) {
+
+                                byte[] encodedBytes = new byte[readBufferPosition];
+                                System.arraycopy(
+                                        readBuffer, 0,
+                                        encodedBytes, 0,
+                                        encodedBytes.length
+                                );
+
+                                // specify US-ASCII encoding
+                                final String data = new String(encodedBytes, "US-ASCII");
+                                readBufferPosition = 0;
+
+                                // tell the user data were sent to bluetooth printer device
+
+                                        deviceCallback.onError(data);
+
+                            } else {
+                                readBuffer[readBufferPosition++] = b;
+                            }
+                        }
                     }
+
+                } catch (IOException ex) {
+                    stopWorker = true;
                 }
-            } catch (final IOException e) {
-                connected = false;
-                if (deviceCallback != null)
-                    new android.os.Handler(Looper.getMainLooper()).post(() -> deviceCallback.onDeviceDisconnected(device, e.getMessage()));
+
             }
         }
     }
@@ -294,6 +330,8 @@ public class Bluetooth {
     }
 
     private class ConnectThread extends Thread {
+        private byte[] readBuffer;
+
         ConnectThread(BluetoothDevice device, boolean insecureConnection) {
             Bluetooth.this.device = device;
             try {
@@ -315,8 +353,14 @@ public class Bluetooth {
             try {
                 socket.connect();
                 out = socket.getOutputStream();
-                input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                inp = socket.getInputStream();
+                //input = new BufferedReader(new InputStreamReader());
                 connected = true;
+                final byte delimiter = 10;
+
+                stopWorker = false;
+                readBufferPosition = 0;
+                readBuffer = new byte[1024];
 
                 new ReceiveThread().start();
 

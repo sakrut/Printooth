@@ -61,7 +61,7 @@ class Printing(private var printer: Printer, private var pairedPrinter: PairedPr
     }
 
     private fun printPrintables() {
-        bluetooth.send(printer.initPrinterCommand) // init printer
+      //  bluetooth.send(printer.initPrinterCommand) // init printer
         this.printables.forEach {
             it.getPrintableByteArray(printer).forEach { ops ->
                 bluetooth.send(ops)

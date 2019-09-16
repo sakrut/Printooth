@@ -3,10 +3,12 @@ package com.mazenrashed.example
 import com.mazenrashed.printooth.data.PrintingImagesHelper
 import com.mazenrashed.printooth.data.converter.ArabicConverter
 import com.mazenrashed.printooth.data.converter.Converter
+import com.mazenrashed.printooth.data.converter.DefaultConverter
+import com.mazenrashed.printooth.data.converter.Utf8Converter
 import com.mazenrashed.printooth.data.printer.Printer
 
 class WoosimPrinter : Printer() {
-    override fun useConverter(): Converter = ArabicConverter()
+    override fun useConverter(): Converter = DefaultConverter()
 
     override fun initLineSpacingCommand(): ByteArray = byteArrayOf(0x1B, 0x33)
 
